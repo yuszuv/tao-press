@@ -1,0 +1,53 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    bigdecimal (3.3.1)
+    concurrent-ruby (1.3.5)
+    dry-auto_inject (1.1.0)
+      dry-core (~> 1.1)
+      zeitwerk (~> 2.6)
+    dry-configurable (1.3.0)
+      dry-core (~> 1.1)
+      zeitwerk (~> 2.6)
+    dry-core (1.1.0)
+      concurrent-ruby (~> 1.0)
+      logger
+      zeitwerk (~> 2.6)
+    dry-inflector (1.2.0)
+    dry-logic (1.6.0)
+      bigdecimal
+      concurrent-ruby (~> 1.0)
+      dry-core (~> 1.1)
+      zeitwerk (~> 2.6)
+    dry-system (1.2.4)
+      dry-auto_inject (~> 1.1)
+      dry-configurable (~> 1.3)
+      dry-core (~> 1.1)
+      dry-inflector (~> 1.1)
+    dry-types (1.8.3)
+      bigdecimal (~> 3.0)
+      concurrent-ruby (~> 1.0)
+      dry-core (~> 1.0)
+      dry-inflector (~> 1.0)
+      dry-logic (~> 1.4)
+      zeitwerk (~> 2.6)
+    logger (1.7.0)
+    mysql2 (0.5.7)
+      bigdecimal
+    sequel (5.97.0)
+      bigdecimal
+    zeitwerk (2.7.3)
+
+PLATFORMS
+  ruby
+  x86_64-linux
+
+DEPENDENCIES
+  dry-system
+  dry-types
+  logger
+  mysql2
+  sequel
+
+BUNDLED WITH
+   2.7.0
