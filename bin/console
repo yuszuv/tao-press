@@ -1,0 +1,41 @@
+#!/usr/bin/env ruby
+
+require "bundler/setup"
+require "pry"
+require_relative "../system/container"
+require_relative "../system/import"
+
+# # Boots
+Application.finalize!
+
+# # Optionales Reload (einfach): nutzt Zeitwerk, wenn vorhanden
+def reload!
+  begin
+    require "zeitwerk"
+    @__loader__ ||= Zeitwerk::Loader.new.tap do |l|
+      l.push_dir(File.expand_path("../lib", __dir__))
+      l.enable_reloading
+      l.setup
+    end
+    @__loader__.reload
+    puts "reloaded."
+  rescue LoadError
+    puts "Zeitwerk nicht verfügbar – Konsole neu starten zum Reload."
+  end
+  true
+end
+
+app = Application
+command = app["commands.export_news"]
+
+binding.pry
+
+# # Pry bevorzugen, sonst IRB
+# begin
+#   require "pry"
+#   # Pry.start(binding)
+#
+#   binding.pry
+# rescue LoadError
+# require "irb"; ARGV.clear; IRB.start
+# end
