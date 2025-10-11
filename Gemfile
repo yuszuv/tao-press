@@ -9,6 +9,7 @@ gem "mysql2"
 gem "sequel"
 gem "csv"
 
+gem "dry-operation"
 gem "dry-struct"
 gem "dry-system"
 gem "dry-transformer"

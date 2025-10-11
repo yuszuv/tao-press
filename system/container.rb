@@ -13,6 +13,17 @@ class Application < Dry::System::Container
 
     config.component_dirs.add "app"
   end
+
+  class Error < StandardError
+    attr_reader :key
+    attr_reader :e
+
+    def initialize(key, error:)
+      @key = key
+      @e = error
+      # super(:bar, msg: "foo")
+    end
+  end
 end
 
 Application.register(:csv_writer, CSVWriter.new)

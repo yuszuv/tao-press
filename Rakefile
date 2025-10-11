@@ -1,11 +1,20 @@
 #!/usr/bin/env rake
+
 namespace :news do
   desc "Export news data"
   task export: :environment do
     command = Application["commands.export_news"]
+    logger = Application["logger"]
 
     puts "Starting news export..."
-    command.()
+
+    case command.()
+    in Success(*result)
+      logger.info result
+    in Failure[code, payload]
+      puts "%-16s:%s" % [code, payload.message]
+    end
+
     puts "News export completed!"
   end
 
@@ -20,9 +29,11 @@ namespace :news do
   task :environment do
     require "dotenv/load"
     require "bundler/setup"
+    require "dry/monads"
     require_relative "system/container"
     require_relative "system/import"
 
+    include Dry::Monads[:result]
     # Initialize the application
     Application.finalize!
   end

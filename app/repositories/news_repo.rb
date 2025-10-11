@@ -11,10 +11,14 @@ module Repositories
 
       ds = ds.limit(limit) if limit
       ds.all
+    rescue Sequel::Error => e
+      raise Application::Error.new(:db_error, error: e)
     end
 
     def find(id)
       dataset.where(id: id).first
+    rescue Sequel::Error => e
+      raise Application::Error.new(:db_error, error: e)
     end
 
     private
