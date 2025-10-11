@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "csv"
 
-module Services
+module Commands
   class ExportNews
     include Import[
       "logger",
