@@ -7,7 +7,12 @@ class Application < Dry::System::Container
   use :zeitwerk #, debug: true
 
   configure do |config|
-    # config.root = Pathname(__dir__).join("..").realpath
-    config.component_dirs.add "lib"
+    config.component_dirs.add "lib" do |dir|
+      dir.auto_register = false
+    end
+
+    config.component_dirs.add "app"
   end
 end
+
+Application.register(:csv_writer, CSVWriter.new)

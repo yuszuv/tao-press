@@ -1,9 +1,5 @@
 module Repositories
-  class AuthorRepo
-    include Import[
-      'db'
-    ]
-
+  class AuthorRepo < Repository
     def find(id)
       dataset
         .where(id: id)

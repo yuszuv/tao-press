@@ -1,7 +1,5 @@
-require "dry/struct"
-
 module Entities
-  class Author < Dry::Struct
+  class Author < Entity
     attribute :email, Types::String
     attribute :name, Types::String
   end

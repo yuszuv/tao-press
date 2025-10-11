@@ -1,9 +1,7 @@
 module Serializers
-  class CSVSerializer
-    HEADERS = %i[title subheadline excerpt]
-
+  class WordpressSerializer
     def call(post)
-      post.to_h.values_at(*HEADERS)
+      post.to_h.values_at(*CSVWriter::HEADERS)
     end
 
     def to_proc

@@ -1,7 +1,5 @@
-require "dry/struct"
-
 module Entities
-  class Post < Dry::Struct
+  class Post < Entity
     attribute :id, Types::Integer
     # attribute :type, Types::String.enum(
     #   'text', 'gallery', 'image'

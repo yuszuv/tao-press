@@ -5,18 +5,13 @@ require "php_serialize"
 require "securerandom"
 
 module Mappers
-  class WordpressMapper < Dry::Transformer::Pipe
+  class PostMapper < Dry::Transformer::Pipe
     import Dry::Transformer::ClassTransformations
-    # import Dry::Transformer::Coercions
     import Dry::Transformer::Conditional
     import Dry::Transformer::HashTransformations
-    # include Deps[
-    #   "inflector",
-    #   "settings"
-    # ]
 
-    HREF_REGEXP = /(?<=href=")(\S+?)(?=")/
-    SRC_REGEXP = /(?<=src=")(\S+?)(?=")/
+    # HREF_REGEXP = /(?<=href=")(\S+?)(?=")/
+    # SRC_REGEXP = /(?<=src=")(\S+?)(?=")/
 
     define! do
       symbolize_keys

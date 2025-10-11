@@ -1,10 +1,6 @@
 # frozen_string_literal: true
 module Repositories
-  class ContentRepo
-    include Import[
-      "db"
-    ]
-
+  class ContentRepo < Repository
     def for_news(news_id)
       dataset
         .where(ptable: "tl_news", pid: news_id)

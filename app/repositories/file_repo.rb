@@ -1,11 +1,7 @@
 # frozen_string_literal: true
 
 module Repositories
-  class FileRepo
-    include Import[
-      'db'
-    ]
-
+  class FileRepo < Repository
     def find(uuid)
       dataset
         .where(uuid: uuid)

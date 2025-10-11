@@ -1,10 +1,6 @@
 # frozen_string_literal: true
 module Repositories
-  class NewsRepo
-    include Import[
-      "db"
-    ]
-
+  class NewsRepo < Repository
     # veröffentlichte News (Contao-Logik: published + start/stop)
     def listing(limit: nil)
       ds = dataset

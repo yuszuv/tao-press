@@ -1,7 +1,5 @@
-require "dry/struct"
-
 module Entities
-  class File < Dry::Struct
+  class File < Entity
     attribute :path, Types::String
   end
 end

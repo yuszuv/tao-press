@@ -1,7 +1,15 @@
+require "csv"
+
 class CSVWriter
+  HEADERS = %i[
+    title
+    subheadline
+    excerpt
+  ].freeze
+
   OPTS = {
     write_headers: true,
-    headers: Serializers::CSVSerializer::HEADERS,
+    headers: HEADERS,
     force_quotes: true
   }.freeze
 
@@ -16,5 +24,4 @@ class CSVWriter
   def to_proc
     method(:call).to_proc
   end
-
 end

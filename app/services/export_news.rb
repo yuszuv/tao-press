@@ -10,8 +10,8 @@ module Services
       "repositories.content_repo",
       "repositories.file_repo",
       "repositories.news_repo",
-      "mappers.wordpress_mapper",
-      "serializers.csv_serializer",
+      "mappers.post_mapper",
+      "serializers.wordpress_serializer",
       "csv_writer"
     ]
 
@@ -23,8 +23,8 @@ module Services
         .map(&add_content)
         .map(&add_author)
         .map(&add_file)
-        .map(&wordpress_mapper)
-        .map(&csv_serializer)
+        .map(&post_mapper)
+        .map(&wordpress_serializer)
         .reduce(csv, &csv_writer)
         .then(&:close)
     end
