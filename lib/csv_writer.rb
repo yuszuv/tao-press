@@ -13,8 +13,10 @@ class CSVWriter
     force_quotes: true
   }.freeze
 
-  def self.build
-    CSV.open('users.csv', 'w', **OPTS)
+  def self.build(path)
+    dir = File.dirname(path)
+    FileUtils.mkdir_p(dir) unless Dir.exist?(dir)
+    CSV.open(path, 'w', **OPTS)
   end
 
   def call(file, row)

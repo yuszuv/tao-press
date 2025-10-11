@@ -12,11 +12,14 @@ module Commands
       "repositories.news_repo",
       "mappers.post_mapper",
       "serializers.wordpress_serializer",
-      "csv_writer"
+      "csv_writer",
+      "settings"
     ]
 
-    def call(limit: 10, jsonl: true)
-      csv = CSVWriter.build
+    def call
+      output_path = settings.csv_output_path
+
+      csv = CSVWriter.build(output_path)
 
       news_repo
         .listing
