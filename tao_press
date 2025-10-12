@@ -1,0 +1,118 @@
+#!/usr/bin/env ruby
+
+require "bundler/setup"
+require "dotenv/load"
+require "dry/cli"
+require "dry/monads"
+
+require_relative "system/container"
+require_relative "system/import"
+require_relative "lib/tao_press/version"
+
+module TaoPress
+  module CLI
+    module Commands
+      extend Dry::CLI::Registry
+      # Base class for CLI commands that need access to the container
+      class Base < Dry::CLI::Command
+        include Dry::Monads[:result]
+
+        attr_reader :app, :logger, :settings
+
+        def initialize
+          super
+          bootstrap_application unless Application.finalized?
+          @app = Application
+          @logger = Application['logger']
+          @settings = Application['settings']
+        end
+
+        private
+
+        def bootstrap_application
+          Application.finalize!
+        end
+      end
+
+      class ExportNews < Base
+        desc "Export news from Contao to WordPress CSV format (WP All Import plugin)"
+
+        option :limit, type: :integer, desc: "Limit number of news items to export"
+        option :output, type: :string, desc: "Override CSV output path", aliases: ["-o"]
+
+        example [
+          "              # Export all news items",
+          "--limit=10    # Export only first 10 news items",
+          "--output=/tmp/news.csv # Export to custom path"
+        ]
+
+        def call(**options)
+          logger.info("Starting news export...")
+
+          path = options[:output] || settings.csv_output_path
+          limit = options[:limit]
+
+          command = app["commands.export_news"]
+
+          case command.(path:, limit:)
+          in Success(_)
+            logger.info("yeah!!!!")
+          else
+            logger.info("Something unexpected happend.")
+            logger.info("Some guy called 'your system administrator' has been informed.")
+          end
+        rescue => e
+          puts "something went wrong"
+          puts e.class
+          puts e
+        end
+      end
+
+      class Info < Base
+        desc "Show application information and available components"
+
+        def call(*)
+          puts "\n" + "=" * 60
+          puts "TaoPress Application Info"
+          puts "=" * 60
+          puts "\nRegistered Components:"
+          Application.keys.sort.each do |key|
+            puts "  • #{key}"
+          end
+          puts "\nAutoloader: #{Application.autoloader.class}"
+          puts "Environment: #{Application.config.env}"
+          puts "=" * 60
+          puts
+        end
+      end
+
+      class Version < Dry::CLI::Command
+        desc "Print version"
+
+        def call(*)
+          puts TaoPress::VERSION
+        end
+      end
+
+      # Register commands
+      register "export", ExportNews, aliases: ["e"]
+      register "info", Info
+      register "version", Version, aliases: ["v", "-v", "--version"]
+    end
+  end
+end
+
+# Run the CLI
+begin
+  Dry::CLI.new(TaoPress::CLI::Commands).call
+rescue Dry::System::ProviderSources::Settings::InvalidSettingsError, Application::ArgumentError => e
+  puts e.backtrace
+  puts
+  puts "-" * 50
+  puts
+  puts e.message
+  puts
+  puts "-" * 50
+  puts
+  puts "invalid settings: please revise your setup, see .env and ./system/provider/settings"
+end

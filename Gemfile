@@ -14,8 +14,10 @@ gem "dry-struct"
 gem "dry-system"
 gem "dry-transformer"
 gem "dry-types"
+gem "dry-cli"
 
 gem "php_serialize"
+gem "ostruct" # silence deprecation warnings
 
 group :development do
   gem "awesome_print"

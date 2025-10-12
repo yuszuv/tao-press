@@ -10,6 +10,7 @@ GEM
     dry-auto_inject (1.1.0)
       dry-core (~> 1.1)
       zeitwerk (~> 2.6)
+    dry-cli (1.3.0)
     dry-configurable (1.3.0)
       dry-core (~> 1.1)
       zeitwerk (~> 2.6)
@@ -55,6 +56,7 @@ GEM
     method_source (1.1.0)
     mysql2 (0.5.7)
       bigdecimal
+    ostruct (0.6.3)
     php_serialize (1.2)
     pry (0.15.2)
       coderay (~> 1.1)
@@ -72,6 +74,7 @@ DEPENDENCIES
   awesome_print
   csv
   dotenv
+  dry-cli
   dry-operation
   dry-struct
   dry-system
@@ -80,6 +83,7 @@ DEPENDENCIES
   hirber
   logger
   mysql2
+  ostruct
   php_serialize
   pry
   rake

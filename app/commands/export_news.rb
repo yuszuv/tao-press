@@ -17,36 +17,39 @@ module Commands
       "settings"
     ]
 
-    include Dry::Monads[:try]
+    def call(path:, limit: nil)
+      news_data = step fetch_news_items(limit:)
 
-    def call
-      news_data = step fetch_news_items
+      news = step map_to_news(news_data)
 
-      news = news_data.map(&post_mapper)
-
-      result = step persist(news)
+      result = step persist(path, news)
 
       Success(result)
     end
 
     private
 
-    def fetch_news_items
+    def fetch_news_items(limit:)
       Try[Application::Error] do
         news_repo
-          .listing
+          .listing(limit:)
           .map(&add_content)
           .map(&add_author)
           .map(&add_file)
           .tap { logger.info("Fetched #{_1.count} news items") }
       end
         .to_result
-        .alt_map { [_1.key, _1.e] }
+        .alt_map { [_1.key, _1.error] }
     end
 
-    def persist(news)
+    def map_to_news(news_data)
+      Success(news_data.map(&post_mapper))
+    rescue Application::Error => e
+      Failure[:invalid_data, e]
+    end
+
+    def persist(output_path, news)
       Try do
-        output_path = settings.csv_output_path
         results = { count: 0, items: [] }
 
         CSVWriter.open(output_path) do |csv|
