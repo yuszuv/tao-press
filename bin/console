@@ -1,13 +1,5 @@
 #!/usr/bin/env ruby
 
-require "bundler/setup"
-require "pry"
-require_relative "../system/container"
-require_relative "../system/import"
-
-# # Boots
-Application.finalize!
-
 # # Optionales Reload (einfach): nutzt Zeitwerk, wenn vorhanden
 def reload!
   begin
@@ -25,10 +17,22 @@ def reload!
   true
 end
 
-app = Application
-command = app["commands.export_news"]
+begin
+  require "bundler/setup"
+  require "pry"
+  require_relative "../system/container"
+  require_relative "../system/import"
 
-binding.pry
+  # # Boots
+  Application.finalize!
+
+  app = Application
+  command = app["commands.export_news"]
+
+  binding.pry
+rescue
+  puts "rescuing ..."
+end
 
 # # Pry bevorzugen, sonst IRB
 # begin

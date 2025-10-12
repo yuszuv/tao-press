@@ -2,7 +2,7 @@ module Repositories
   class AuthorRepo < TaoPress::Repository
     def find(id)
       dataset
-        .where(id: id)
+        .where(id:)
         .select(:name, :email)
         .first
     end

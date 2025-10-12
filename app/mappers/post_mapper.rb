@@ -10,6 +10,12 @@ module Mappers
     # HREF_REGEXP = /(?<=href=")(\S+?)(?=")/
     # SRC_REGEXP = /(?<=src=")(\S+?)(?=")/
 
+    def call(...)
+      super(...)
+    rescue Dry::Struct::Error => e
+      raise Application::Error.new("data in DB is not valid", :invalid_data, error: e)
+    end
+
     define! do
       symbolize_keys
 

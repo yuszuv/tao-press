@@ -2,6 +2,7 @@
 Application.register_provider(:logger) do
   prepare do
     require "logger"
+    require "awesome_print"
   end
 
   start do

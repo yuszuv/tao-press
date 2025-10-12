@@ -15,15 +15,18 @@ class Application < Dry::System::Container
   end
 
   class Error < StandardError
+    attr_reader :message
     attr_reader :key
-    attr_reader :e
+    attr_reader :error
 
-    def initialize(key, error:)
+    def initialize(message, key = :unknown, error: nil)
+      super(message)
+      @message = message
       @key = key
-      @e = error
-      # super(:bar, msg: "foo")
+      @error = error
     end
   end
-end
 
-Application.register(:csv_writer, CSVWriter.new)
+  class ArgumentError < Error
+  end
+end

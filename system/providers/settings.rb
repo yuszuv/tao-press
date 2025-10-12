@@ -36,5 +36,9 @@ Application.register_provider(:settings, from: :dry_system) do
     # ENV: CSV_OUTPUT_PATH (required)
     # Output path for the generated CSV (e.g., export.csv)
     setting :csv_output_path, constructor: Types::String.constrained(filled: true)
+
+    setting :signal_account, constructor: Types::String.optional
+    setting :signal_recipients, default: "", constructor: ->(xs) { xs.split(",").then{ Types::Array.of(Types::String)[_1] } }
+    setting :signal_cli_path, constructor: Types::String.optional
   end
 end

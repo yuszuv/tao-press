@@ -10,15 +10,16 @@ module Repositories
         .reverse_order(:date)
 
       ds = ds.limit(limit) if limit
-      ds.all
-    rescue Sequel::Error => e
-      raise Application::Error.new(:db_error, error: e)
+      result = ds.all
+
+      result
     end
 
     def find(id)
       dataset.where(id: id).first
-    rescue Sequel::Error => e
-      raise Application::Error.new(:db_error, error: e)
+    # rescue Sequel::Error => e
+    #   logger.error("Database error in news_repo.find", error: e.message, id: id)
+    #   raise Application::Error.new(:db_error, error: e)
     end
 
     private

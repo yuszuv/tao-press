@@ -21,6 +21,19 @@ Application.register_provider(:system_administrator) do
       })
     end
 
+    x = ->(code, error) do
+      puts code
+      puts error
+    end
+
+    class << x
+      def notify(...)
+        call(...)
+      end
+    end
+
+    subscribers << x
+
     error_handler = ErrorHandler.new(logger: target[:logger], notifiers: subscribers)
 
     register(:error_handler, error_handler)

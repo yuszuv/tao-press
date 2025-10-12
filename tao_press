@@ -54,9 +54,27 @@ module TaoPress
 
           command = app["commands.export_news"]
 
-          case command.(path:, limit:)
-          in Success(_)
-            logger.info("yeah!!!!")
+          res = command.(path:, limit:)
+
+          case res
+          in Success(result)
+            result => { processed_count:, file: }
+            logger.info "Exported items: #{processed_count}"
+            logger.info "File: #{file}"
+          in Failure[:invalid_data, { error:, data: }]
+            logger.info "Invalid data found ..."
+            logger.info error.message
+            logger.info ""
+            $stdout.print "Show invalid data? (y/N) "
+            dec = $stdin.gets.chomp
+            unless dec == "" || dec.downcase == "n"
+              logger.ap data, :info
+            end
+          in Failure[code, *payload]
+            logger.info("something expectable happend")
+            logger.info "code: #{code}"
+            logger.info "payload:"
+            logger.info payload.inspect
           else
             logger.info("Something unexpected happend.")
             logger.info("Some guy called 'your system administrator' has been informed.")
