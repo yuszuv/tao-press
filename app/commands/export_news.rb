@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 require "csv"
-require "dry/operation"
+require "php_serialize"
 
 module Commands
-  class ExportNews < Dry::Operation
+  class ExportNews < TaoPress::Operation
     include Import[
       "logger",
       "db",

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 module Repositories
-  class NewsRepo < Repository
+  class NewsRepo < TaoPress::Repository
     # veröffentlichte News (Contao-Logik: published + start/stop)
     def listing(limit: nil)
       ds = dataset

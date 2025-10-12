@@ -1,5 +1,5 @@
 module Repositories
-  class AuthorRepo < Repository
+  class AuthorRepo < TaoPress::Repository
     def find(id)
       dataset
         .where(id: id)

@@ -1,5 +1,5 @@
 module Entities
-  class Author < Entity
+  class Author < TaoPress::Entity
     attribute :email, Types::String
     attribute :name, Types::String
   end

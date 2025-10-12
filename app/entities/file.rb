@@ -1,5 +1,5 @@
 module Entities
-  class File < Entity
+  class File < TaoPress::Entity
     attribute :path, Types::String
   end
 end

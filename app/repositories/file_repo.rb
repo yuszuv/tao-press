@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Repositories
-  class FileRepo < Repository
+  class FileRepo < TaoPress::Repository
     def find(uuid)
       dataset
         .where(uuid: uuid)

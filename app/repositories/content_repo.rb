@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 module Repositories
-  class ContentRepo < Repository
+  class ContentRepo < TaoPress::Repository
     def for_news(news_id)
       dataset
         .where(ptable: "tl_news", pid: news_id)

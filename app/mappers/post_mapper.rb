@@ -1,8 +1,5 @@
 # frozen_string_literal: true
-
 require "dry/transformer"
-require "php_serialize"
-require "securerandom"
 
 module Mappers
   class PostMapper < Dry::Transformer::Pipe
