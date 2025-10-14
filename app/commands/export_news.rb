@@ -11,18 +11,30 @@ module Commands
       "repositories.content_repo",
       "repositories.file_repo",
       "repositories.news_repo",
-      "mappers.post_mapper",
       "serializers.csv_serializer",
       "csv_writer",
-      "settings"
+      "settings",
+      "news_mapper": "mappers.post_mapper"
     ]
+
+    include Dry::Monads[:list]
+    include Dry::Monads[:result]
+    include Dry::Monads[:maybe]
 
     def call(path:, limit: nil)
       news_data = step fetch_news_items(limit:)
 
-      news = step map_to_news(news_data)
+      # TODO: return correct failures (i.e. struct data)
+      news, failures = step map_to_news(news_data)
 
-      result = step persist(path, news)
+      file = step persist(path, news)
+
+      result = {
+        processed_count: news.count,
+        failures: failures,
+        file: file.path
+
+      }
       # logger.info("Successfully persisted news data", result: result)
 
       Success(result)
@@ -41,27 +53,27 @@ module Commands
         .to_result
     end
 
-    def map_to_news(news_data)
-      Success(news_data.map(&post_mapper))
-    rescue Application::Error => e
-      Failure[:invalid_data, error: e, data: news_data]
+    def map_to_news(input)
+      Success(
+        input.map do |n|
+          Try[Application::Error] {
+            news_mapper.(n)
+          }.to_result
+        end
+        .partition(&:success?)
+      )
     end
 
     def persist(output_path, news)
-      # logger.info("Starting CSV export", path: output_path, count: news.count)
-      Try[Application::Error] do
-        results = { processed_count: 0, items: [], file: "todo" }
-
-        file = csv_serializer.(output_path, news)
-
-        results.merge(file:)
-
-        results
-      end
-        .to_result
-    rescue => e
-      puts e
-      puts "this should not happen"
+      Success(
+        List[*news]
+          .fmap(&:to_maybe)
+          .collect
+      ).bind do |list|
+          Try[Application::Error] do
+            csv_serializer.(output_path, list)
+          end.to_result
+        end
     end
 
     def add_content

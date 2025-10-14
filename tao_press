@@ -58,9 +58,18 @@ module TaoPress
 
           case res
           in Success(result)
-            result => { processed_count:, file: }
+            result => { processed_count:, failures:, file: }
             logger.info "Exported items: #{processed_count}"
+            logger.info "Failures: #{failures}"
             logger.info "File: #{file}"
+
+            if failures.any?
+              $stdout.print "Show invalid data? (y/N) "
+              dec = $stdin.gets.chomp
+              unless dec == "" || dec.downcase == "n"
+                logger.ap failures, :info
+              end
+            end
           in Failure[:invalid_data, { error:, data: }]
             logger.info "Invalid data found ..."
             logger.info error.message
@@ -68,7 +77,7 @@ module TaoPress
             $stdout.print "Show invalid data? (y/N) "
             dec = $stdin.gets.chomp
             unless dec == "" || dec.downcase == "n"
-              logger.ap data, :info
+              logger.ap data.slice(:headline), :info
             end
           in Failure[code, *payload]
             logger.info("something expectable happend")

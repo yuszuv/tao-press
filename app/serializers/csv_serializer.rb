@@ -15,13 +15,18 @@ module Serializers
     include Import['csv_writer']
 
     def call(path, news)
-      csv_file = csv_writer.(path:, **OPTS) do |f|
+      csv_writer.(path:, **OPTS) do |f|
         news
           .map{ _1.to_h.values_at(*HEADERS) }
           .each { |n| f << n }
+        f
       end
+    rescue Errno::ENOENT
+      raise Application::Error.new("Output path does not exist", :invalid_data)
+    end
 
-      { file: csv_file }
+    def to_proc
+      method(:call).to_proc
     end
   end
 end
