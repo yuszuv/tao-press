@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Simple server startup script for Rack-based apps
+
+set -e  # Exit immediately on error
+
+# Default values
+PORT=${PORT:-9292}
+HOST=${HOST:-0.0.0.0}
+ENV=${RACK_ENV:-development}
+CONFIG=${CONFIG:-config.ru}
+
+echo "=> Starting Rack server"
+echo "   Environment: $ENV"
+echo "   Host:        $HOST"
+echo "   Port:        $PORT"
+echo "   Config:      $CONFIG"
+echo
+
+bundle exec rackup "$CONFIG" -E "$ENV" -o "$HOST" -p "$PORT"
