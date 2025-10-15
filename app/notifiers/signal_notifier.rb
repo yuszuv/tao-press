@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Error notifier for Signal messenger using signal-cli
-class ErrorNotifiers::SignalNotifier
+class Notifiers::SignalNotifier
   include Import['settings']
 
   def initialize(account:, recipients:, **kwargs)
@@ -58,8 +58,7 @@ class ErrorNotifiers::SignalNotifier
         ]
 
         # Execute the command
-        # system(*command)
-        puts command.join(" ")
+        system(*command)
 
         if $?.success?
           puts "📱 SIGNAL NOTIFICATION sent to #{recipient}"

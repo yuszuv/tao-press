@@ -2,7 +2,7 @@
 require "dry/transformer"
 
 module Mappers
-  class PostMapper < Dry::Transformer::Pipe
+  class NewsMapper < Dry::Transformer::Pipe
     import Dry::Transformer::ClassTransformations
     import Dry::Transformer::Conditional
     import Dry::Transformer::HashTransformations
@@ -38,9 +38,9 @@ module Mappers
         time: :published_at
         # enclosure: :attachment_url
 
-      accept_keys Entities::Post.attribute_names
+      accept_keys Entities::News.attribute_names
 
-      constructor_inject Entities::Post
+      constructor_inject Entities::News
     end
 
     def to_proc

@@ -4,10 +4,12 @@ require "bundler/setup"
 require "dotenv/load"
 require "dry/cli"
 require "dry/monads"
+require "dry/monitor"
+require "dry/events"
 
-require_relative "system/container"
-require_relative "system/import"
-require_relative "lib/tao_press/version"
+require_relative "../system/container"
+require_relative "../system/import"
+require_relative "../lib/tao_press/version"
 
 module TaoPress
   module CLI
@@ -47,6 +49,8 @@ module TaoPress
         ]
 
         def call(**options)
+          results = {}
+
           logger.info("Starting news export...")
 
           path = options[:output] || settings.csv_output_path

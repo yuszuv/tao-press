@@ -39,6 +39,7 @@ Application.register_provider(:settings, from: :dry_system) do
 
     setting :signal_account, constructor: Types::String.optional
     setting :signal_recipients, default: "", constructor: ->(xs) { xs.split(",").then{ Types::Array.of(Types::String)[_1] } }
+    # setting :signal_recipients, default: "", constructor: ->(xs) { xs.split(",").then{ Types::Array.of(Types::Email)[_1] } }
     setting :signal_cli_path, constructor: Types::String.optional
   end
 end

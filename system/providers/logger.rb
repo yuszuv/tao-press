@@ -9,6 +9,11 @@ Application.register_provider(:logger) do
     require "logger"
     logger = Logger.new($stdout)
     logger.level = ENV["LOG_LEVEL"]&.upcase == "DEBUG" ? Logger::DEBUG : Logger::INFO
+
+    logger.formatter = proc { |_severity, time, _progname, msg|
+      # [time, "-" * 50, msg].zip(["\n"].cycle).join
+      msg + "\n"
+    }
     register(:logger, logger)
   end
 end

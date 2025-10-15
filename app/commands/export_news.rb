@@ -7,14 +7,14 @@ module Commands
     include Import[
       "logger",
       "db",
+      "mappers.news_mapper",
       "repositories.author_repo",
       "repositories.content_repo",
       "repositories.file_repo",
       "repositories.news_repo",
       "serializers.csv_serializer",
       "csv_writer",
-      "settings",
-      "news_mapper": "mappers.post_mapper"
+      "settings"
     ]
 
     include Dry::Monads[:list]

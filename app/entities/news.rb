@@ -1,6 +1,7 @@
 module Entities
-  class Post < TaoPress::Entity
+  class News < TaoPress::Entity
     attribute :id, Types::Integer
+    # attribute :foo, Types::Integer
     # attribute :type, Types::String.enum(
     #   'text', 'gallery', 'image'
     # )
