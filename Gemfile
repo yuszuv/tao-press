@@ -12,6 +12,8 @@ gem "sequel"
 gem "csv"
 
 gem "dry-cli"
+gem "dry-events"
+gem "dry-monitor"
 gem "dry-operation"
 gem "dry-struct"
 gem "dry-system"

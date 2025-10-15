@@ -4,10 +4,21 @@ Application.register_provider(:fs) do
   end
 
   start do
-    csv_writer = ->(path:, **opts, &block) {
-      CSV.open(path, 'w', **opts, &block)
-    }
+    register :csv_reader do |path, &block|
+      CSV.readlines(path).then do |headers, *rows|
+        rows
+          .map(&headers.method(:zip))
+          .map(&:to_h)
+          .each do |row|
+            block.(row)
+          end
+      end
+    end
 
-    register(:csv_writer, csv_writer)
+    register :csv_writer do |path:, **opts, &block|
+      CSV.open(path, 'w', **opts, &block)
+    end
+
+    self
   end
 end

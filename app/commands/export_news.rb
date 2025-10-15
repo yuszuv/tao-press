@@ -37,7 +37,7 @@ module Commands
       }
       # logger.info("Successfully persisted news data", result: result)
 
-      Success(result)
+      result
     end
 
     private

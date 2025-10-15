@@ -9,7 +9,9 @@ require "dry/events"
 
 require_relative "../system/container"
 require_relative "../system/import"
+require_relative "../system/log_decorator"
 require_relative "../lib/tao_press/version"
+require_relative "../lib/support/table_printer"
 
 module TaoPress
   module CLI
@@ -32,11 +34,15 @@ module TaoPress
         private
 
         def bootstrap_application
+          # Application.configure!
+
           Application.finalize!
         end
       end
 
       class ExportNews < Base
+        SECTION_SEP = "=" * 80
+
         desc "Export news from Contao to WordPress CSV format (WP All Import plugin)"
 
         option :limit, type: :integer, desc: "Limit number of news items to export"
@@ -49,9 +55,8 @@ module TaoPress
         ]
 
         def call(**options)
-          results = {}
-
-          logger.info("Starting news export...")
+          logger.info "Starting news export..."
+          logger.info ""
 
           path = options[:output] || settings.csv_output_path
           limit = options[:limit]
@@ -62,18 +67,20 @@ module TaoPress
 
           case res
           in Success(result)
-            result => { processed_count:, failures:, file: }
-            logger.info "Exported items: #{processed_count}"
-            logger.info "Failures: #{failures}"
-            logger.info "File: #{file}"
+            logger.info "Overall result"
+            logger.info SECTION_SEP
+            logger.info TablePrinter.print_row(
+              result,
+              [:processed_count, :failures, :file]
+            )
 
-            if failures.any?
-              $stdout.print "Show invalid data? (y/N) "
-              dec = $stdin.gets.chomp
-              unless dec == "" || dec.downcase == "n"
-                logger.ap failures, :info
-              end
-            end
+            # if failures.any?
+            #   $stdout.print "Show invalid data? (y/N) "
+            #   dec = $stdin.gets.chomp
+            #   unless dec == "" || dec.downcase == "n"
+            #     logger.ap failures, :info
+            #   end
+            # end
           in Failure[:invalid_data, { error:, data: }]
             logger.info "Invalid data found ..."
             logger.info error.message
@@ -96,6 +103,38 @@ module TaoPress
           puts "something went wrong"
           puts e.class
           puts e
+          raise e
+        end
+
+        def bootstrap_application
+          setup_logging
+          super
+        end
+
+        def setup_logging
+          Application.prepare(:fs)
+          Application.after(:register) do |key|
+            logger = resolve(:logger)
+            csv_reader = resolve(:csv_reader)
+
+            case key
+            when /.*news_repo/
+              decorate(key, with: LogDecorator.for(:listing) do |result|
+                logger.debug "\nListing Result:"
+                logger.debug SECTION_SEP
+                logger.debug "Count: #{result.count}"
+                logger.debug ""
+              end)
+            when "serializers.csv_serializer"
+              decorate(key, with: LogDecorator.for(:call) do |result|
+                logger.debug("Serializer result:")
+                logger.debug SECTION_SEP
+                csv_reader.(result.path) do |row|
+                  logger.debug TablePrinter.print_row(row, ["title", "excerpt"])
+                end
+              end)
+            end
+          end
         end
       end
 
@@ -130,6 +169,7 @@ module TaoPress
       register "info", Info
       register "version", Version, aliases: ["v", "-v", "--version"]
     end
+
   end
 end
 

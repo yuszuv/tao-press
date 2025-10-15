@@ -29,7 +29,7 @@ Application.register_provider(:settings, from: :dry_system) do
     # ENV: LOG_LEVEL (optional) – one of: DEBUG, INFO (default), WARN, ERROR, FATAL, TRACE, UNKNOWN
     # Default is :info. Set LOG_LEVEL=DEBUG to enable verbose logging; SQL queries
     # are logged when the logger level is :debug (see db provider).
-    setting :logger_level, default: :info, constructor: Types::Symbol
+    setting :log_level, default: :info, constructor: Types::Symbol
       .constructor { |value| value.to_s.downcase.to_sym }
       .enum(:trace, :unknown, :error, :fatal, :warn, :info, :debug)
 
