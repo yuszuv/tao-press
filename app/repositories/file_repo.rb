@@ -1,11 +1,18 @@
 # frozen_string_literal: true
+require "php_serialize"
 
 module Repositories
   class FileRepo < TaoPress::Repository
     def find(uuid)
+      # uuid = extract_uuids(blob).first
+
       dataset
         .where(uuid: uuid)
         .first
+    end
+
+    def extract_uuids(blob)
+      blob ? PHP.unserialize(blob) : []
     end
 
     # Aus Binär(16) die Dateipfad ermitteln

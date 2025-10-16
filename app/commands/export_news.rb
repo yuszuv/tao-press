@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 require "csv"
-require "php_serialize"
 
 module Commands
   class ExportNews < TaoPress::Operation
@@ -35,8 +34,6 @@ module Commands
         file: file.path
 
       }
-      # logger.info("Successfully persisted news data", result: result)
-
       result
     end
 
@@ -44,11 +41,29 @@ module Commands
 
     def fetch_news_items(limit:)
       Try[Application::Error] do
-        news_repo
-          .listing(limit:)
-          .map(&add_content)
-          .map(&add_author)
-          .map(&add_file)
+        news_repo.listing(limit:).map do |n|
+          content = content_repo.for_news(n[:id]).map do |ce|
+            case ce[:type]
+            when "gallery", "bs_grid_gallery"
+              blobs = PHP.unserialize(ce[:multiSRC])
+              files = blobs.map{ file_repo.find _1 }
+
+              ce.merge(files:)
+            when "download", "image"
+              file = file_repo.find(ce[:singleSRC])
+
+              ce.merge(file:)
+            else
+              ce
+            end
+          end
+
+          author = author_repo.find(n[:author])
+          blobs = n[:enclosure] ? PHP.unserialize(n[:enclosure]) : []
+          file = file_repo.find(blobs.first)
+
+          { **n, content:, author:, file: }
+        end
       end
         .to_result
     end
@@ -74,36 +89,6 @@ module Commands
             csv_serializer.(output_path, list)
           end.to_result
         end
-    end
-
-    def add_content
-      ->(news) {
-        news.merge(
-          content: content_repo.for_news(news[:id]),
-        )
-      }
-    end
-
-    def add_author
-      ->(news) {
-        news.merge(
-          author: author_repo.find(news[:author]),
-        )
-      }
-    end
-
-    def add_file
-      ->(news) {
-        news.merge(
-          file: file_repo.find(
-            news[:enclosure].then(&method(:extract_uuids)).first
-          )
-        )
-      }
-    end
-
-    def extract_uuids(blob)
-      blob ? PHP.unserialize(blob) : []
     end
   end
 end
