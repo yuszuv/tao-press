@@ -20,6 +20,7 @@ gem "dry-system", github: "yuszuv/dry-system", branch: "bugfix/provide-kwargs-on
 gem "dry-transformer"
 gem "dry-types"
 
+gem "babosa"
 gem "ostruct" # silence deprecation warnings
 gem "php_serialize"
 

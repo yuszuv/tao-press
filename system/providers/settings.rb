@@ -37,6 +37,10 @@ Application.register_provider(:settings, from: :dry_system) do
     # Output path for the generated CSV (e.g., export.csv)
     setting :csv_output_path, constructor: Types::String.constrained(filled: true)
 
+    # ENV: MARKDOWN_OUTPUT_PATH (required)
+    # Output directory for the generated Markdown files (e.g., ./markdown_output)
+    setting :markdown_output_path, constructor: Types::String.constrained(filled: true)
+
     setting :signal_account, constructor: Types::String.optional
     setting :signal_recipients, default: "", constructor: ->(xs) { xs.split(",").then{ Types::Array.of(Types::String)[_1] } }
     # setting :signal_recipients, default: "", constructor: ->(xs) { xs.split(",").then{ Types::Array.of(Types::Email)[_1] } }

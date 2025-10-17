@@ -1,6 +1,8 @@
 Application.register_provider(:fs) do
   prepare do
     require "csv"
+    require "yaml"
+    require "fileutils"
   end
 
   start do
@@ -17,6 +19,13 @@ Application.register_provider(:fs) do
 
     register :csv_writer do |path:, **opts, &block|
       CSV.open(path, 'w', **opts, &block)
+    end
+
+    register :markdown_writer do |path:, **opts, &block|
+      File.open(path, "w", **opts) do |f|
+        block.(f)
+        f
+      end
     end
 
     self

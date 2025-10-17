@@ -12,6 +12,7 @@ module Commands
       "repositories.file_repo",
       "repositories.news_repo",
       "serializers.csv_serializer",
+      "serializers.markdown_serializer",
       "csv_writer",
       "settings"
     ]
@@ -20,19 +21,20 @@ module Commands
     include Dry::Monads[:result]
     include Dry::Monads[:maybe]
 
-    def call(path:, limit: nil)
+    def call(csv_path:, markdown_path:, limit: nil)
       news_data = step fetch_news_items(limit:)
 
       # TODO: return correct failures (i.e. struct data)
       news, failures = step map_to_news(news_data)
 
-      file = step persist(path, news)
+      csv_file = step persist_csv(csv_path, news)
+      markdown_dir = step persist_markdown(markdown_path, news)
 
       result = {
         processed_count: news.count,
         failures: failures,
-        file: file.path
-
+        csv_file: csv_file.path,
+        markdown_dir: markdown_dir
       }
       result
     end
@@ -79,7 +81,7 @@ module Commands
       )
     end
 
-    def persist(output_path, news)
+    def persist_csv(output_path, news)
       Success(
         List[*news]
           .fmap(&:to_maybe)
@@ -87,6 +89,18 @@ module Commands
       ).bind do |list|
           Try[Application::Error] do
             csv_serializer.(output_path, list)
+          end.to_result
+        end
+    end
+
+    def persist_markdown(output_dir, news)
+      Success(
+        List[*news]
+          .fmap(&:to_maybe)
+          .collect
+      ).bind do |list|
+          Try[Application::Error] do
+            markdown_serializer.(output_dir, list)
           end.to_result
         end
     end
