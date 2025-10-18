@@ -21,8 +21,10 @@ gem "dry-transformer"
 gem "dry-types"
 
 gem "babosa"
+gem "commonmarker"
 gem "ostruct" # silence deprecation warnings
 gem "php_serialize"
+gem "reverse_markdown"
 
 group :development do
   gem "awesome_print"

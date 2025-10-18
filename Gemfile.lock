@@ -16,6 +16,7 @@ GEM
     babosa (2.0.0)
     bigdecimal (3.3.1)
     coderay (1.1.3)
+    commonmarker (2.5.0-x86_64-linux)
     concurrent-ruby (1.3.5)
     csv (3.3.5)
     dotenv (3.1.8)
@@ -70,13 +71,18 @@ GEM
     method_source (1.1.0)
     mysql2 (0.5.7)
       bigdecimal
+    nokogiri (1.18.10-x86_64-linux-gnu)
+      racc (~> 1.4)
     ostruct (0.6.3)
     php_serialize (1.2)
     pry (0.15.2)
       coderay (~> 1.1)
       method_source (~> 1.0)
+    racc (1.8.1)
     rack (2.2.20)
     rake (13.3.0)
+    reverse_markdown (3.0.0)
+      nokogiri
     sequel (5.97.0)
       bigdecimal
     web_pipe (0.16.0)
@@ -88,12 +94,12 @@ GEM
     zeitwerk (2.7.3)
 
 PLATFORMS
-  ruby
   x86_64-linux
 
 DEPENDENCIES
   awesome_print
   babosa
+  commonmarker
   csv
   dotenv
   dry-cli
@@ -111,6 +117,7 @@ DEPENDENCIES
   php_serialize
   pry
   rake
+  reverse_markdown
   sequel
   web_pipe
   webrick

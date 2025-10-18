@@ -1,23 +1,11 @@
 # frozen_string_literal: true
-require "php_serialize"
-
 require "dry/transformer"
 
 module Mappers
   class NewsMapper < TaoPress::Mapper
-    include Import[
-      "repositories.file_repo"
-    ]
+    import TaoPress::ContentTransformations
 
     container.tap do |t|
-      t.register(:parse_heading_level) do |str|
-        str.to_s.length > 0 ? str.to_s[/\d{1,}/].to_i : nil
-      end
-
-      t.register(:reject_empty_headline) do |data|
-        data[:text].to_s.length > 0 ? data : nil
-      end
-
       t.register(:to_meta, (
         t(:unserialize)
           .>> t(:deep_symbolize_keys)
@@ -32,13 +20,9 @@ module Mappers
           .>> t[:deep_symbolize_keys]
           .>> t[:map_value, :unit, t[:parse_heading_level]]
           .>> t[:rename_keys, value: :text, unit: :level]
-          .>> t[:reject_empty_headline]
+          .>> t[:reject_empty, :text]
         )
       )
-
-      t.register :sort do |value, key|
-        value.sort_by{ _1[key] }
-      end
     end
 
     define! do
@@ -47,10 +31,37 @@ module Mappers
       map_value :content do
         sort :sorting
         map_array do
+          map_value :image do
+            guard ->(s){ !s.nil? } do
+              map_value :meta do
+                to_meta
+              end
+            end
+          end
           content_guard :text do
             map_value :headline do
               to_headline
             end
+            map_value :files do
+              map_array do
+                map_value :tstamp do
+                  datetime_from_int
+                end
+                map_value :uuid do
+                  bin_to_str
+                end
+                map_value :path do
+                  slugify_path
+                  uri_escape
+                end
+                rename_keys tstamp: :mtime
+              end
+            end
+            map_value :text do
+              strip_artefacts
+            end
+            rename_keys files: :images
+            replace_contao_insert_tags
             accept_keys! Entities::Content::Text.attribute_names
             constructor_inject Entities::Content::Text
           end
@@ -106,13 +117,15 @@ module Mappers
       end
 
       map_value :teaser, :to_s.to_proc
-      map_value :time, ->(int) { Time.at(int).to_datetime }
+      map_value :time do
+        datetime_from_int
+      end
 
       rename_keys headline: :title,
         teaser: :excerpt,
         time: :published_at
 
-      slugify
+      slugify_data
 
       accept_keys Entities::News.attribute_names
       constructor_inject Entities::News

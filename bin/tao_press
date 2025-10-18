@@ -125,6 +125,13 @@ module TaoPress
                 logger.debug "Count: #{result.count}"
                 logger.debug ""
               end)
+            when "mappers.news_mapper"
+              decorate(key, with: LogDecorator.for(:call) do |result|
+                logger.debug "\nMapper Result:"
+                logger.debug SECTION_SEP
+                logger.ap result, :debug
+                logger.debug ""
+              end)
             when "serializers.csv_serializer"
               decorate(key, with: LogDecorator.for(:call) do |result|
                 logger.debug("Serializer result:")
@@ -132,6 +139,12 @@ module TaoPress
                 csv_reader.(result.path) do |row|
                   logger.debug TablePrinter.print_row(row, ["title", "excerpt"])
                 end
+              end)
+            when "serializers.markdown_serializer"
+              decorate(key, with: LogDecorator.for(:call) do |result|
+                logger.debug("Markdown Serializer result:")
+                logger.debug SECTION_SEP
+                logger.debug "Output directory: #{result}"
               end)
             end
           end

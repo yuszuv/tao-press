@@ -11,7 +11,7 @@ module Commands
       "repositories.content_repo",
       "repositories.file_repo",
       "repositories.news_repo",
-      "serializers.csv_serializer",
+      "serializers.wordpress_serializer",
       "serializers.markdown_serializer",
       "csv_writer",
       "settings"
@@ -36,33 +36,50 @@ module Commands
         csv_file: csv_file.path,
         markdown_dir: markdown_dir
       }
+
       result
     end
 
     private
 
+    def extract_uuids(str)
+      str.scan(REGEXP).map(&:first)
+    end
+
     def fetch_news_items(limit:)
       Try[Application::Error] do
         news_repo.listing(limit:).map do |n|
+          # putting things from the db together before processing
           content = content_repo.for_news(n[:id]).map do |ce|
             case ce[:type]
+            when "text"
+              files = extract_uuids(ce[:text])
+                .map{ file_repo.find(_1) }
+
+              ce.merge(files:)
             when "gallery", "bs_grid_gallery"
-              blobs = PHP.unserialize(ce[:multiSRC])
-              files = blobs.map{ file_repo.find _1 }
+              blobs = Transformations.unserialize(ce[:multiSRC])
+              files = blobs.map{ file_repo.find_by_bin _1 }
 
               ce.merge(files:)
             when "download", "image"
-              file = file_repo.find(ce[:singleSRC])
+              file = file_repo.find_by_bin(ce[:singleSRC])
 
               ce.merge(file:)
             else
               ce
+            end.then do |ce|
+              blob = ce[:singleSRC]
+              image = blob ? file_repo.find_by_bin(blob) : nil
+              ce.merge(image:)
             end
           end
 
           author = author_repo.find(n[:author])
-          blobs = n[:enclosure] ? PHP.unserialize(n[:enclosure]) : []
-          file = file_repo.find(blobs.first)
+
+          blobs = Transformations.unserialize(n[:enclosure])
+          file = file_repo.find_by_bin(blobs.first)
+
 
           { **n, content:, author:, file: }
         end
@@ -88,7 +105,7 @@ module Commands
           .collect
       ).bind do |list|
           Try[Application::Error] do
-            csv_serializer.(output_path, list)
+            wordpress_serializer.(output_path, list)
           end.to_result
         end
     end

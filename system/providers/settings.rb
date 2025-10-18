@@ -36,7 +36,7 @@ Application.register_provider(:settings, from: :dry_system) do
     # ENV: CSV_OUTPUT_PATH (required)
     # Output path for the generated CSV (e.g., export.csv)
     setting :csv_output_path, constructor: Types::String.constrained(filled: true)
-
+    setting :wordpress_uploads_prefix, default: "", constructor: Types::String
     # ENV: MARKDOWN_OUTPUT_PATH (required)
     # Output directory for the generated Markdown files (e.g., ./markdown_output)
     setting :markdown_output_path, constructor: Types::String.constrained(filled: true)

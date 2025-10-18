@@ -8,9 +8,9 @@ module TaoPress
 
         def serialize(key, &block)
           if block
-            serializers[key] = ->(obj) { block.(obj) }
+            serializers[key] = block
           else
-            serializers[key] = ->(obj) { obj.public_send(key) }
+            serializers[key] = ->(obj, _context) { obj.public_send(key) }
           end
         end
       end
