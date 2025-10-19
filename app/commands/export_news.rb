@@ -3,6 +3,8 @@ require "csv"
 
 module Commands
   class ExportNews < TaoPress::Operation
+    REGEXP = /{{file::([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})(?:\|(?:urlattr|attr|absolute))?}}/
+
     include Import[
       "logger",
       "db",

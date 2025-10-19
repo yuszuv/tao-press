@@ -4,7 +4,7 @@ module TaoPress
   class Operation < Dry::Operation
     def self.method_added(method_name)
       super
-      prepend ExceptionHandling
+      prepend ExceptionHandling if method_name == :call
     end
 
     include Import[

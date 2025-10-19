@@ -3,6 +3,8 @@ require "dry/system"
 require "dry/monitor"
 require "dry/events"
 require "pathname"
+require "babosa"
+
 
 require_relative "./error_handler"
 

@@ -13,6 +13,8 @@ require_relative "../system/log_decorator"
 require_relative "../lib/tao_press/version"
 require_relative "../lib/support/table_printer"
 
+require "pry" if Application.env == :development
+
 module TaoPress
   module CLI
     module Commands
@@ -43,27 +45,30 @@ module TaoPress
       class ExportNews < Base
         SECTION_SEP = "=" * 80
 
-        desc "Export news from Contao to WordPress CSV format (WP All Import plugin)"
+        desc "Export news from Contao to CSV and Markdown formats"
 
         option :limit, type: :integer, desc: "Limit number of news items to export"
         option :output, type: :string, desc: "Override CSV output path", aliases: ["-o"]
+        option :markdown_output, type: :string, desc: "Override Markdown output directory", aliases: ["-m"]
 
         example [
           "              # Export all news items",
           "--limit=10    # Export only first 10 news items",
-          "--output=/tmp/news.csv # Export to custom path"
+          "--output=/tmp/news.csv # Export CSV to custom path",
+          "--markdown_output=/tmp/markdown # Export Markdown to custom directory"
         ]
 
         def call(**options)
           logger.info "Starting news export..."
           logger.info ""
 
-          path = options[:output] || settings.csv_output_path
+          csv_path = options[:output] || settings.csv_output_path
+          markdown_path = options[:markdown_output] || settings.markdown_output_path
           limit = options[:limit]
 
           command = app["commands.export_news"]
 
-          res = command.(path:, limit:)
+          res = command.(csv_path:, markdown_path:, limit:)
 
           case res
           in Success(result)
@@ -71,7 +76,7 @@ module TaoPress
             logger.info SECTION_SEP
             logger.info TablePrinter.print_row(
               result,
-              [:processed_count, :failures, :file]
+              [:processed_count, :failures, :csv_file, :markdown_dir]
             )
 
             # if failures.any?
@@ -134,7 +139,7 @@ module TaoPress
               end)
             when "serializers.csv_serializer"
               decorate(key, with: LogDecorator.for(:call) do |result|
-                logger.debug("Serializer result:")
+                logger.debug("CSV Serializer result:")
                 logger.debug SECTION_SEP
                 csv_reader.(result.path) do |row|
                   logger.debug TablePrinter.print_row(row, ["title", "excerpt"])
