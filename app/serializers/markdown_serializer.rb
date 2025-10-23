@@ -2,53 +2,34 @@ module Serializers
   class MarkdownSerializer < TaoPress::Serializer
     include Import['markdown_writer']
 
-    def self.content_to_markdown
-      ->(content) {
-        str = ""
-        headline = content.headline
-        if headline
-          str << ["#" * headline.level, headline.text, "\n\n"].join(" ")
-        end
-        case content
-        when Entities::Content::Text
-          str << content.text
-          str
-        when Entities::Content::Gallery
-          str << "# Galerie\n\n" unless headline
-          str << content.images.inject([]) do |result, image|
-            alt_text = image.meta.alt || image.meta.title || 'Gallery Image'
-            result << "![#{alt_text}](#{image.path})"
-            result
-          end.join("\n\n")
-          str
-        when Entities::Content::Image
-          str
-        when Entities::Content::Download
-          str << "# Download\n\n" unless headline
-          str << "[#{content.file.name}](#{content.file.path})"
-        when Entities::Content::YouTube
-          str << "# YouTube\n\n" unless headline
-          str << "ID: #{content.youtube_id}"
-        else
-          raise Application::Error.new("unknown content element type for #{content}", :invalid_data)
-        end
-      }
-    end
-
     serialize :title do |obj|
       obj.title.gsub(/:/,":")
     end
     serialize :content do |obj|
-      obj.content.map(&content_to_markdown).join("\n\n")
+      res = obj.content.reduce("", &content_reducer)
+
+      if res.length == 0
+        res = Transformations[:text_markup].(
+          Entities::Content::Text.new(
+            text: obj.excerpt,
+            type: "text",
+            headline: nil,
+            image: nil,
+            images: []),
+        )
+      end
+
+      if obj.file
+        content_reducer.(res, obj.file)
+      else
+        res
+      end
     end
     serialize :author do |obj|
       obj.author.email
     end
     serialize :date do |obj|
       obj.published_at.strftime('%Y-%m-%d %H:%M:%S %z')
-    end
-    serialize :author do |obj|
-      obj.author.email
     end
 
     def call(dirname, news)
@@ -57,6 +38,37 @@ module Serializers
       dirname
     rescue Errno::ENOENT
       raise Application::Error.new("Output directory does not exist", :invalid_data)
+    end
+
+    def serialize
+      -> (ent) { self.class.serializers.reduce({}) do |row, (key, p)|
+        row.merge(key => p.(ent))
+      end}
+    end
+
+    def self.content_reducer
+      -> (res, content) {
+        content_result = case content
+        in Entities::Content::Text
+          Transformations[:text_markup].(content)
+        in Entities::Content::Gallery
+          Transformations[:gallery_markup].(content)
+        in Entities::Content::Download
+          Transformations[:download_markup].(content)
+        in Entities::Content::YouTube
+          Transformations[:youtube_markup].(content)
+        in Entities::Content::Image
+          Transformations[:image_markup].(content)
+        in Entities::Content::File
+          Transformations[:file_markup].(content)
+        end
+
+        if res.length > 0 && content_result.length > 0
+          res + "\n\n" + content_result
+        else
+          res + content_result
+        end
+      }
     end
 
     private
@@ -68,7 +80,7 @@ module Serializers
           "%s-%s.md" % [n.published_at.strftime("%Y-%m-%d"), n.slug]
         )
         markdown_writer.(path:) do |f|
-          f.puts markdown_template % markdown_variables(n)
+          f.puts markdown_template % serialize.(n)
         end
       }
     end
@@ -83,12 +95,6 @@ module Serializers
         ---
         %{content}
       MD
-    end
-
-    def markdown_variables(news_item)
-      self.class.serializers.reduce({}) do |acc, (key, p)|
-        acc.merge(key => p.(news_item))
-      end
     end
   end
 end
