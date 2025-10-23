@@ -22,14 +22,19 @@ begin
   require "pry"
   require_relative "../system/container"
   require_relative "../system/import"
+  require_relative "../lib/support/vcr"
 
-  # # Boots
-  Application.finalize!
+  VCR.use_cassette("openai") do
+    # Boots
+    Application.finalize!
 
-  app = Application
-  command = app["commands.export_news"]
+    app = Application
+    settings = app["settings"]
 
-  binding.pry
+    command = app["commands.export_news"]
+
+    binding.pry
+  end
 rescue
   puts "rescuing ..."
 end

@@ -12,6 +12,7 @@ require_relative "../system/import"
 require_relative "../system/log_decorator"
 require_relative "../lib/tao_press/version"
 require_relative "../lib/support/table_printer"
+require_relative "../lib/support/vcr"
 
 require "pry" if Application.env == :development
 
@@ -59,19 +60,20 @@ module TaoPress
         ]
 
         def call(**options)
-          logger.info "Starting news export..."
-          logger.info ""
+          VCR.use_cassette("openai") do
+            logger.info "Starting news export..."
+            logger.info ""
 
-          csv_path = options[:output] || settings.csv_output_path
-          markdown_path = options[:markdown_output] || settings.markdown_output_path
-          limit = options[:limit]
+            csv_path = options[:output] || settings.csv_output_path
+            markdown_path = options[:markdown_output] || settings.markdown_output_path
+            limit = options[:limit]
 
-          command = app["commands.export_news"]
+            command = app["commands.export_news"]
 
-          res = command.(csv_path:, markdown_path:, limit:)
+            res = command.(csv_path:, markdown_path:, limit:)
 
-          case res
-          in Success(result)
+            case res
+            in Success(result)
             logger.info "Overall result"
             logger.info SECTION_SEP
             logger.info TablePrinter.print_row(
@@ -86,7 +88,7 @@ module TaoPress
             #     logger.ap failures, :info
             #   end
             # end
-          in Failure[:invalid_data, { error:, data: }]
+            in Failure[:invalid_data, { error:, data: }]
             logger.info "Invalid data found ..."
             logger.info error.message
             logger.info ""
@@ -95,7 +97,7 @@ module TaoPress
             unless dec == "" || dec.downcase == "n"
               logger.ap data.slice(:headline), :info
             end
-          in Failure[code, *payload]
+            in Failure[code, *payload]
             logger.info("something expectable happend")
             logger.info "code: #{code}"
             logger.info "payload:"
@@ -104,11 +106,12 @@ module TaoPress
             logger.info("Something unexpected happend.")
             logger.info("Some guy called 'your system administrator' has been informed.")
           end
-        rescue => e
-          puts "something went wrong"
-          puts e.class
-          puts e
-          raise e
+          rescue => e
+            puts "something went wrong"
+            puts e.class
+            puts e
+            raise e
+          end
         end
 
         def bootstrap_application

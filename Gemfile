@@ -31,4 +31,6 @@ group :development do
   gem "awesome_print"
   gem "hirber"
   gem "pry"
+  gem "vcr"
+  gem "webmock"  # Required by VCR for stubbing HTTP
 end
