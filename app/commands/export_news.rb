@@ -110,7 +110,7 @@ module Commands
           .collect(&:to_maybe)
           .fmap do |n|
             Try[Application::Error] do
-              tags = tag_extractor.(n)
+              tags = (rate_limit >> tag_extractor).(n)
 
               Entities::News.new(**n.attributes, tags:)
             end.to_result
@@ -130,6 +130,10 @@ module Commands
       Try[Application::Error] do
         markdown_serializer.(output_dir, news)
       end.to_result
+    end
+
+    def rate_limit
+      @rate_limit ||= RateLimit.new(Time.now).method(:call)
     end
   end
 end

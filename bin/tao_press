@@ -51,6 +51,7 @@ module TaoPress
         option :limit, type: :integer, desc: "Limit number of news items to export"
         option :output, type: :string, desc: "Override CSV output path", aliases: ["-o"]
         option :markdown_output, type: :string, desc: "Override Markdown output directory", aliases: ["-m"]
+        option :tags, type: :boolean, default: false, desc: "Regenerate the tags"
 
         example [
           "              # Export all news items",
@@ -60,7 +61,9 @@ module TaoPress
         ]
 
         def call(**options)
-          VCR.use_cassette("openai") do
+          record = options[:tags] ? :all : :none
+
+          VCR.use_cassette("openai", record:) do
             logger.info "Starting news export..."
             logger.info ""
 
@@ -126,7 +129,7 @@ module TaoPress
             csv_reader = resolve(:csv_reader)
 
             case key
-            when /.*news_repo/
+            when "repositories.news_repo"
               decorate(key, with: LogDecorator.for(:listing) do |result|
                 logger.debug "\nListing Result:"
                 logger.debug SECTION_SEP
@@ -154,6 +157,13 @@ module TaoPress
                 logger.debug SECTION_SEP
                 logger.debug "Output directory: #{result}"
               end)
+            when "services.tag_extractor"
+              decorate(key, with: LogDecorator.for(:call) do |result|
+                logger.debug("Tag extractor result:")
+                logger.debug SECTION_SEP
+                logger.debug "#{result}"
+              end)
+            #   wait(result).tap { logger.info ' done' }
             end
           end
         end

@@ -4,7 +4,6 @@ module Services
   class TagExtractor
     include Import[
       "ruby_llm",
-      "logger",
       "serializers.markdown_serializer"
     ]
 
@@ -32,9 +31,6 @@ module Services
         .first(5) # Limit to 5 tags max
 
       tags
-    rescue => e
-      logger.error("AI tag extraction failed: #{e.message}")
-      []
     end
 
     def build_tag_extraction_prompt(content)
