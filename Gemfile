@@ -25,6 +25,7 @@ gem "commonmarker"
 gem "ostruct" # silence deprecation warnings
 gem "php_serialize"
 gem "reverse_markdown"
+gem "ruby_llm"
 
 group :development do
   gem "awesome_print"

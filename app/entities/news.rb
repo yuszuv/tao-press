@@ -10,6 +10,7 @@ module Entities
 
     attribute :author, Types.Instance(Entities::Author)
     attribute :file, Types.Instance(Entities::Content::File).optional
+    attribute :tags, Types::Array.of(Types::String).default([].freeze)
 
     def attachment_url
       file.path

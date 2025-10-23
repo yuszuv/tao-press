@@ -37,6 +37,9 @@ module Serializers
     serialize :author do |obj|
       obj.author.email
     end
+    serialize :tags do |obj|
+      obj.tags.join(",")
+    end
     
 
     def call(path, news)

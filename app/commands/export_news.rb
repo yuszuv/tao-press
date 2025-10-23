@@ -15,6 +15,7 @@ module Commands
       "repositories.news_repo",
       "serializers.wordpress_serializer",
       "serializers.markdown_serializer",
+      "services.tag_extractor",
       "csv_writer",
       "settings"
     ]
@@ -29,11 +30,14 @@ module Commands
       # TODO: return correct failures (i.e. struct data)
       news, failures = step map_to_news(news_data)
 
-      csv_file = step persist_csv(csv_path, news)
-      markdown_dir = step persist_markdown(markdown_path, news)
+      # Extract tags for successful news items
+      tagged_news = step extract_tags(news)
+
+      csv_file = step persist_csv(csv_path, tagged_news)
+      markdown_dir = step persist_markdown(markdown_path, tagged_news)
 
       result = {
-        processed_count: news.count,
+        processed_count: tagged_news.count,
         failures: failures,
         csv_file: csv_file.path,
         markdown_dir: markdown_dir
@@ -98,6 +102,15 @@ module Commands
         end
         .partition(&:success?)
       )
+    end
+
+    def extract_tags(news)
+      Try[Application::Error] do
+        news.map do |news_item|
+          tags = tag_extractor.(news_item)
+          news_item.with(tags: tags)
+        end
+      end.to_result
     end
 
     def persist_csv(output_path, news)

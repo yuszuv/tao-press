@@ -45,5 +45,9 @@ Application.register_provider(:settings, from: :dry_system) do
     setting :signal_recipients, default: "", constructor: ->(xs) { xs.split(",").then{ Types::Array.of(Types::String)[_1] } }
     # setting :signal_recipients, default: "", constructor: ->(xs) { xs.split(",").then{ Types::Array.of(Types::Email)[_1] } }
     setting :signal_cli_path, constructor: Types::String.optional
+
+    # ENV: OPENAI_API_KEY (required for AI tag extraction)
+    # OpenAI API key for RubyLLM integration
+    setting :openai_api_key, constructor: Types::String.constrained(filled: true)
   end
 end
