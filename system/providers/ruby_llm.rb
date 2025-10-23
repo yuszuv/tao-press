@@ -1,12 +1,10 @@
-require "dry/system"
-require "ruby_llm"
-
+# frozen_string_literal: true
 Application.register_provider(:ruby_llm) do
-  before :prepare do
+  prepare do
     require "ruby_llm"
   end
 
-  prepare do
+  start do
     settings = target[:settings]
 
     RubyLLM.configure do |config|

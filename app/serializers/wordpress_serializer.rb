@@ -1,5 +1,4 @@
 require "commonmarker"
-require "reverse_markdown"
 
 module Serializers
   class WordpressSerializer < TaoPress::Serializer

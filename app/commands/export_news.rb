@@ -105,36 +105,31 @@ module Commands
     end
 
     def extract_tags(news)
-      Try[Application::Error] do
-        news.map do |news_item|
-          tags = tag_extractor.(news_item)
-          news_item.with(tags: tags)
-        end
-      end.to_result
+      Success(
+        List[*news]
+          .collect(&:to_maybe)
+          .fmap do |n|
+            Try[Application::Error] do
+              tags = tag_extractor.(n)
+
+              Entities::News.new(**n.attributes, tags:)
+            end.to_result
+          end
+          .collect(&:to_maybe)
+          .to_a
+      )
     end
 
     def persist_csv(output_path, news)
-      Success(
-        List[*news]
-          .fmap(&:to_maybe)
-          .collect
-      ).bind do |list|
-          Try[Application::Error] do
-            wordpress_serializer.(output_path, list)
-          end.to_result
-        end
+      Try[Application::Error] do
+        wordpress_serializer.(output_path, news)
+      end.to_result
     end
 
     def persist_markdown(output_dir, news)
-      Success(
-        List[*news]
-          .fmap(&:to_maybe)
-          .collect
-      ).bind do |list|
-          Try[Application::Error] do
-            markdown_serializer.(output_dir, list)
-          end.to_result
-        end
+      Try[Application::Error] do
+        markdown_serializer.(output_dir, news)
+      end.to_result
     end
   end
 end

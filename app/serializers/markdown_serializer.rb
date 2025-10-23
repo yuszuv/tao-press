@@ -1,3 +1,5 @@
+require "reverse_markdown"
+
 module Serializers
   class MarkdownSerializer < TaoPress::Serializer
     include Import['markdown_writer']
@@ -5,6 +7,11 @@ module Serializers
     serialize :title do |obj|
       obj.title.gsub(/:/,":")
     end
+
+    serialize :tags do |obj|
+      obj.tags.join(", ")
+    end
+
     serialize :content do |obj|
       res = obj.content.reduce("", &content_reducer)
 
@@ -25,9 +32,11 @@ module Serializers
         res
       end
     end
+
     serialize :author do |obj|
       obj.author.email
     end
+
     serialize :date do |obj|
       obj.published_at.strftime('%Y-%m-%d %H:%M:%S %z')
     end
@@ -92,6 +101,7 @@ module Serializers
         title:  '%{title}'
         date:   %{date}
         author: %{author}
+        tags:   %{tags}
         ---
         %{content}
       MD
