@@ -8,29 +8,33 @@ module Services
     ]
 
     def call(news)
-      md = markdown_serializer.serialize.(news)
-
-      extract_tags_with_ai(md)
+      (serialize_markdown >> generate_tags).(news)
     end
 
     private
 
-    def extract_tags_with_ai(content)
-      prompt = build_tag_extraction_prompt(content)
+    def serialize_markdown
+      markdown_serializer.serialize
+    end
 
-      begin
-        response = ruby_llm.chat.ask(prompt)
-      rescue => e
-        raise Application::Error.new(e.message, :llm_chat_failed, error: e)
+    def generate_tags
+      lambda do |content|
+        prompt = build_tag_extraction_prompt(content)
+
+        begin
+          response = ruby_llm.chat.ask(prompt)
+        rescue => e
+          raise Application::Error.new(e.message, :llm_chat_failed, error: e)
+        end
+
+        # Parse the response to extract tags
+        tags = response.content
+          .split(/[,\n]/)
+          .map(&:strip)
+          .first(5) # Limit to 5 tags max
+
+        tags
       end
-
-      # Parse the response to extract tags
-      tags = response.content
-        .split(/[,\n]/)
-        .map(&:strip)
-        .first(5) # Limit to 5 tags max
-
-      tags
     end
 
     def build_tag_extraction_prompt(content)
