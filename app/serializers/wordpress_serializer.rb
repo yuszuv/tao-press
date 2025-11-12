@@ -1,5 +1,4 @@
 require "commonmarker"
-require "reverse_markdown"
 
 module Serializers
   class WordpressSerializer < TaoPress::Serializer
@@ -36,6 +35,9 @@ module Serializers
     serialize :published_at
     serialize :author do |obj|
       obj.author.email
+    end
+    serialize :tags do |obj|
+      obj.tags.join(",")
     end
     
 

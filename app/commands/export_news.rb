@@ -15,6 +15,7 @@ module Commands
       "repositories.news_repo",
       "serializers.wordpress_serializer",
       "serializers.markdown_serializer",
+      "services.tag_extractor",
       "csv_writer",
       "settings"
     ]
@@ -29,11 +30,14 @@ module Commands
       # TODO: return correct failures (i.e. struct data)
       news, failures = step map_to_news(news_data)
 
-      csv_file = step persist_csv(csv_path, news)
-      markdown_dir = step persist_markdown(markdown_path, news)
+      # Extract tags for successful news items
+      tagged_news = step extract_tags(news)
+
+      csv_file = step persist_csv(csv_path, tagged_news)
+      markdown_dir = step persist_markdown(markdown_path, tagged_news)
 
       result = {
-        processed_count: news.count,
+        processed_count: tagged_news.count,
         failures: failures,
         csv_file: csv_file.path,
         markdown_dir: markdown_dir
@@ -100,28 +104,36 @@ module Commands
       )
     end
 
-    def persist_csv(output_path, news)
+    def extract_tags(news)
       Success(
         List[*news]
-          .fmap(&:to_maybe)
-          .collect
-      ).bind do |list|
-          Try[Application::Error] do
-            wordpress_serializer.(output_path, list)
-          end.to_result
-        end
+          .collect(&:to_maybe)
+          .fmap do |n|
+            Try[Application::Error] do
+              tags = (rate_limit >> tag_extractor).(n)
+
+              Entities::News.new(**n.attributes, tags:)
+            end.to_result
+          end
+          .collect(&:to_maybe)
+          .to_a
+      )
+    end
+
+    def persist_csv(output_path, news)
+      Try[Application::Error] do
+        wordpress_serializer.(output_path, news)
+      end.to_result
     end
 
     def persist_markdown(output_dir, news)
-      Success(
-        List[*news]
-          .fmap(&:to_maybe)
-          .collect
-      ).bind do |list|
-          Try[Application::Error] do
-            markdown_serializer.(output_dir, list)
-          end.to_result
-        end
+      Try[Application::Error] do
+        markdown_serializer.(output_dir, news)
+      end.to_result
+    end
+
+    def rate_limit
+      @rate_limit ||= RateLimit.new(Time.now).method(:call)
     end
   end
 end
