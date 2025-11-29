@@ -40,6 +40,7 @@ GEM
     dry-events (1.1.0)
       concurrent-ruby (~> 1.0)
       dry-core (~> 1.1)
+    dry-files (1.1.0)
     dry-inflector (1.2.0)
     dry-logic (1.6.0)
       bigdecimal
@@ -145,6 +146,7 @@ DEPENDENCIES
   dotenv
   dry-cli
   dry-events
+  dry-files
   dry-monitor
   dry-operation
   dry-struct

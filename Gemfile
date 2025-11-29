@@ -13,6 +13,7 @@ gem "sequel"
 
 gem "dry-cli"
 gem "dry-events"
+gem "dry-files"
 gem "dry-monitor"
 gem "dry-operation"
 gem "dry-struct"
