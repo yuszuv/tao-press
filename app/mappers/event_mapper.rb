@@ -23,38 +23,6 @@ module Mappers
           .>> t[:reject_empty, :text]
         )
       )
-
-      t.register(:combine_start_datetime, ->(data) {
-        start_date = data[:startDate] ? Transformations.datetime_from_int(data[:startDate]) : nil
-        start_time = data[:startTime] && data[:startTime] != 0 ? Transformations.datetime_from_int(data[:startTime]) : nil
-        
-        if start_date && start_time
-          DateTime.new(
-            start_date.year, start_date.month, start_date.day,
-            start_time.hour, start_time.min, start_time.sec
-          )
-        elsif start_date
-          start_date
-        else
-          nil
-        end
-      })
-
-      t.register(:combine_end_datetime, ->(data) {
-        end_date = data[:endDate] && data[:endDate] != 0 ? Transformations.datetime_from_int(data[:endDate]) : nil
-        end_time = data[:endTime] && data[:endTime] != 0 ? Transformations.datetime_from_int(data[:endTime]) : nil
-        
-        if end_date && end_time
-          DateTime.new(
-            end_date.year, end_date.month, end_date.day,
-            end_time.hour, end_time.min, end_time.sec
-          )
-        elsif end_date
-          end_date
-        else
-          nil
-        end
-      })
     end
 
     define! do
@@ -142,46 +110,26 @@ module Mappers
       end
 
       map_value :file do
-        guard ->{ !_1.nil? } do
-          accept_keys Entities::Content::File.attribute_names
+        guard ->(x){ !x.nil? } do
+          accept_keys! Entities::Content::File.attribute_names
           constructor_inject Entities::Content::File
         end
       end
 
+      # rename_keys startDate: :start_date, startTime: :start_time
+      rename_keys tstamp: :published_at, startTime: :start_time, endTime: :end_time
+
       map_value :teaser, :to_s.to_proc
-      
-      # Combine startDate and startTime into a single DateTime
-      map_hash do
-        add_key :start_date, ->(h) { 
-          start_date = h[:startDate] ? Transformations.datetime_from_int(h[:startDate]) : nil
-          start_time = h[:startTime] && h[:startTime] != 0 ? Transformations.datetime_from_int(h[:startTime]) : nil
-          
-          if start_date && start_time
-            DateTime.new(
-              start_date.year, start_date.month, start_date.day,
-              start_time.hour, start_time.min, start_time.sec
-            )
-          elsif start_date
-            start_date
-          else
-            nil
-          end
-        }
-        add_key :end_date, ->(h) { 
-          end_date = h[:endDate] && h[:endDate] != 0 ? Transformations.datetime_from_int(h[:endDate]) : nil
-          end_time = h[:endTime] && h[:endTime] != 0 ? Transformations.datetime_from_int(h[:endTime]) : nil
-          
-          if end_date && end_time
-            DateTime.new(
-              end_date.year, end_date.month, end_date.day,
-              end_time.hour, end_time.min, end_time.sec
-            )
-          elsif end_date
-            end_date
-          else
-            nil
-          end
-        }
+      map_value :published_at do
+        datetime_from_int
+      end
+      map_value :start_time do
+        datetime_from_int
+      end
+      map_value :end_time do
+        guard ->(s){ !s.nil? } do
+          datetime_from_int
+        end
       end
 
       # Events use 'title' directly, not 'headline' like news

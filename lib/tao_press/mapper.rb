@@ -1,3 +1,5 @@
+require "dry/struct"
+
 module TaoPress
   class Mapper < Dry::Transformer::Pipe
     import Dry::Transformer::ArrayTransformations

@@ -36,12 +36,12 @@ module Serializers
       obj.author.email
     end
 
-    serialize :start_date do |obj|
-      obj.start_date.strftime('%Y-%m-%d %H:%M:%S %z')
+    serialize :start_time do |obj|
+      obj.start_time.strftime('%Y-%m-%d %H:%M:%S %z')
     end
 
-    serialize :end_date do |obj|
-      obj.end_date&.strftime('%Y-%m-%d %H:%M:%S %z')
+    serialize :end_time do |obj|
+      obj.end_time&.strftime('%Y-%m-%d %H:%M:%S %z')
     end
 
     serialize :location
@@ -91,7 +91,7 @@ module Serializers
       -> (e) {
         path = File.join(
           dirname,
-          "%s-%s.md" % [e.start_date.strftime("%Y-%m-%d"), e.slug]
+          "%s-%s.md" % [e.start_time.strftime("%Y-%m-%d"), e.slug]
         )
         markdown_writer.(path:) do |f|
           f.puts markdown_template % serialize.(e)
@@ -104,8 +104,8 @@ module Serializers
         ---
         layout: event
         title:  '%{title}'
-        start_date:   %{start_date}
-        end_date:   %{end_date}
+        start_time:   %{start_time}
+        end_time:   %{end_time}
         location:   %{location}
         author: %{author}
         ---

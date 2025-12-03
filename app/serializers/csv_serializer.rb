@@ -26,7 +26,7 @@ module Serializers
         f
       end
     rescue Errno::ENOENT
-      raise Application::Error.new("Output path does not exist", :invalid_data)
+      raise Application::Error.new("CSV output path does not exist", :invalid_data)
     end
 
     def serialize

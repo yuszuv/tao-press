@@ -186,9 +186,15 @@ module TaoPress
         ]
 
         def call(**options)
-          csv_path = File.join(options[:csv_dir] || settings.csv_dir, "events.csv")
-          markdown_path = File.join(options[:markdown_dir] || settings.markdown_dir, "events")
           limit = options[:limit]
+
+          files = app["files"]
+
+          csv_path = File.join(options[:csv_dir] || settings.csv_dir, "events.csv")
+          files.mkdir_p(csv_path)
+
+          markdown_path = File.join(options[:markdown_dir] || settings.markdown_dir, "events")
+          files.mkdir_p(files.join(markdown_path, "fnord.md")) # TODO: remove fnord hack
 
           logger.info "Starting events export..."
           logger.info ""
@@ -205,9 +211,10 @@ module TaoPress
               result,
               [:processed_count, :failures, :csv_file, :markdown_dir]
             )
-          in Failure[:invalid_data, { error:, data: }]
+          in Failure[:invalid_data, error]
             logger.info "Invalid data found ..."
             logger.info error.message
+            logger.info error.backtrace.join("\n")
             logger.info ""
             $stdout.print "Show invalid data? (y/N) "
             dec = $stdin.gets.chomp
@@ -219,8 +226,6 @@ module TaoPress
             logger.info "code: #{code}"
             logger.info "payload:"
             logger.info payload.inspect
-            puts "putsing ..."
-            puts payload
           else
             logger.info("Something unexpected happend.")
             logger.info("Some guy called 'your system administrator' has been informed.")

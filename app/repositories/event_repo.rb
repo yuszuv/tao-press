@@ -3,7 +3,7 @@ module Repositories
   class EventRepo < TaoPress::Repository
     def listing(limit: nil)
       ds = dataset
-        .reverse_order(:startDate)
+        .reverse_order(:tstamp)
 
       ds = ds.limit(limit) if limit
       result = ds.all

@@ -2,41 +2,41 @@ require_relative "wordpress_serializer/transformations"
 
 module Serializers
   class EventCSVSerializer < TaoPress::Serializer
+    # TODO: serialize author and venues
+
     include Import['csv_writer', 'settings']
 
     Transformations = WordpressSerializer::Transformations
 
     serialize :title
-    serialize :subheadline
-    serialize :excerpt
-    serialize :content do |obj, base_url:|
-      res = obj.content.reduce("", &content_reducer(base_url:))
 
-      if res.length == 0
-        res = Transformations[:text_markup].(Entities::Content::Text.new(text: obj.excerpt, type: "text", headline: nil, image: nil, images: []), base_url)
-      end
-
+    serialize :description do |obj, base_url:|
+      res = ""
       if obj.file
         content_reducer(base_url:).(res, obj.file)
       else
         res
       end
     end
+
     serialize :start_date do |obj|
-      obj.start_date.strftime('%Y-%m-%d %H:%M:%S')
+      obj.start_time.strftime('%Y-%m-%d')
+    end
+    serialize :start_time do |obj|
+      obj.start_time.strftime('%H:%M')
     end
     serialize :end_date do |obj|
-      obj.end_date&.strftime('%Y-%m-%d %H:%M:%S')
+    obj.end_time&.strftime('%Y-%m-%d') || obj.start_time.strftime('%Y-%m-%d')
+    end
+    serialize :end_time do |obj|
+      obj.end_time&.strftime('%H:%M') || obj.start_time.strftime('%H:%M')
     end
     serialize :location
-    serialize :author do |obj|
-      obj.author.email
-    end
 
     def call(path, events)
       opts = {
         write_headers: true,
-        headers: self.class.serializers.keys,
+        headers: self.class.serializers.keys.map(&header_for_serializer_key),
         force_quotes: true
       }
 
@@ -49,6 +49,40 @@ module Serializers
       end
     rescue Errno::ENOENT
       raise Application::Error.new("Output path does not exist", :invalid_data)
+    end
+
+    def header_for_serializer_key
+      lambda do |key|
+        dict = {
+          title: "EVENT NAME",
+          description: "EVENT DESCRIPTION",
+          excerpt: "EVENT EXCERPT",
+          start_date: "EVENT START DATE",
+          start_time: "EVENT START TIME",
+          end_date: "EVENT END DATE",
+          end_time: "EVENT END TIME",
+          # "TIMEZONE",
+          # "ALL DAY EVENT",
+          # "HIDE FROM EVENT LISTINGS",
+          # "STICKY IN MONTH VIEW",
+          location: "EVENT VENUE NAME",
+          # "EVENT ORGANIZER NAME",
+          # "EVENT SHOW MAP LINK",
+          # "EVENT SHOW MAP",
+          # "EVENT COST",
+          # "EVENT CURRENCY SYMBOL",
+          # "EVENT CURRENCY POSITION",
+          # "EVENT CATEGORY",
+          # "EVENT TAGS",
+          # "EVENT WEBSITE",
+          # "EVENT FEATURED IMAGE",
+          # "ALLOW COMMENTS",
+          # "ALLOW TRACKBACKS AND PINGBACKS"
+
+        }
+
+        dict[key] || key
+      end
     end
 
     def serialize
