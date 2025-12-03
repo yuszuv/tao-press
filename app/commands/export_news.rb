@@ -13,8 +13,8 @@ module Commands
       "repositories.content_repo",
       "repositories.file_repo",
       "repositories.news_repo",
-      "serializers.wordpress_serializer",
-      "serializers.markdown_serializer",
+      "serializers.news.wordpress_serializer",
+      "serializers.news.markdown_serializer",
       "services.tag_extractor",
       "csv_writer",
       "settings"

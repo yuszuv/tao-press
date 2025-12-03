@@ -1,6 +1,6 @@
 module Serializers
-  class MarkdownSerializer
-    module Transformations
+  module Transformations
+    module Markdown
       extend Dry::Transformer::Registry
 
       def self.text_markup(content)

@@ -13,8 +13,8 @@ module Commands
       "repositories.content_repo",
       "repositories.file_repo",
       "repositories.event_repo",
-      "serializers.event_csv_serializer",
-      "serializers.event_markdown_serializer",
+      "serializers.events.wordpress_serializer",
+      "serializers.events.markdown_serializer",
       "csv_writer",
       "settings"
     ]
@@ -27,13 +27,24 @@ module Commands
       events_data = step fetch_events_items(limit:)
 
       events, failures = step map_to_events(events_data)
+      puts "X" * 100
+      ap events
 
       csv_file = step persist_csv(csv_path, events)
       markdown_dir = step persist_markdown(markdown_path, events)
 
+      failures.each do |f|
+        fail = f.failure
+
+        # TODO print to STDOUT
+        logger.warn(fail.message)
+        logger.warn(fail.key.to_s)
+        logger.warn(fail.error.to_s)
+      end
+
       result = {
         processed_count: events.count,
-        failures: failures,
+        failures: failures.count,
         csv_file: csv_file.path,
         markdown_dir: markdown_dir
       }
@@ -102,13 +113,13 @@ module Commands
 
     def persist_csv(output_path, events)
       Try[Application::Error] do
-        event_csv_serializer.(output_path, events)
+        wordpress_serializer.(output_path, events)
       end.to_result
     end
 
     def persist_markdown(output_dir, events)
       Try[Application::Error] do
-        event_markdown_serializer.(output_dir, events)
+        markdown_serializer.(output_dir, events)
       end.to_result
     end
   end
