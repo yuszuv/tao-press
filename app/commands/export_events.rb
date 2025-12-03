@@ -27,20 +27,19 @@ module Commands
       events_data = step fetch_events_items(limit:)
 
       events, failures = step map_to_events(events_data)
-      puts "X" * 100
-      ap events
 
       csv_file = step persist_csv(csv_path, events)
       markdown_dir = step persist_markdown(markdown_path, events)
 
-      failures.each do |f|
-        fail = f.failure
-
-        # TODO print to STDOUT
-        logger.warn(fail.message)
-        logger.warn(fail.key.to_s)
-        logger.warn(fail.error.to_s)
-      end
+      # TODO: perhaps move to error notifier
+      # failures.each do |f|
+      #   fail = f.failure
+      #
+      #   # TODO print to STDOUT
+      #   logger.warn(fail.message)
+      #   logger.warn(fail.key.to_s)
+      #   logger.warn(fail.error.to_s)
+      # end
 
       result = {
         processed_count: events.count,
