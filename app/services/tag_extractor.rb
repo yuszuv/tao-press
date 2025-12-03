@@ -4,7 +4,7 @@ module Services
   class TagExtractor
     include Import[
       "ruby_llm",
-      "serializers.markdown_serializer"
+      "news.markdown_serializer"
     ]
 
     def call(news)

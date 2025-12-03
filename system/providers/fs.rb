@@ -3,9 +3,14 @@ Application.register_provider(:fs) do
     require "csv"
     require "yaml"
     require "fileutils"
+    require "dry/files"
   end
 
   start do
+    register :files do
+      Dry::Files.new
+    end
+
     register :csv_reader do |path, &block|
       CSV.readlines(path).then do |headers, *rows|
         rows

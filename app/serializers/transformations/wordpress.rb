@@ -1,13 +1,13 @@
 require "reverse_markdown"
 
 module Serializers
-  class WordpressSerializer
-    module Transformations
+  module Transformations
+    module Wordpress
       extend Dry::Transformer::Registry
 
       def self.file_markup(content, base_url)
         template = <<~FILE
-          <!-- wp:stackable/button-group -->
+          <!-- wp:stackable/button-group {contentAlign":"center"} -->
           <div class="wp-block-stackable-button-group stk-block-button-group stk-block" >
             <div class="stk-row stk-inner-blocks stk-block-content stk-button-group">
             <!-- wp:stackable/button -->

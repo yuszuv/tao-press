@@ -10,7 +10,7 @@ module TaoPress
           if block
             serializers[key] = block
           else
-            serializers[key] = ->(obj, _context) { obj.public_send(key) }
+            serializers[key] = ->(obj, *_context) { obj.public_send(key) }
           end
         end
       end

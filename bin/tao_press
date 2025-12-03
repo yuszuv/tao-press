@@ -49,14 +49,14 @@ module TaoPress
         desc "Export news from Contao to CSV and Markdown formats"
 
         option :limit, type: :integer, desc: "Limit number of news items to export"
-        option :output, type: :string, desc: "Override CSV output path", aliases: ["-o"]
+        option :"news-dir", type: :string, desc: "Override CSV output path", aliases: ["-o"]
         option :markdown_output, type: :string, desc: "Override Markdown output directory", aliases: ["-m"]
         option :tags, type: :boolean, default: false, desc: "Regenerate the tags"
 
         example [
           "              # Export all news items",
           "--limit=10    # Export only first 10 news items",
-          "--output=/tmp/news.csv # Export CSV to custom path",
+          "--output-dir=/tmp/ # Export to custom directory",
           "--markdown_output=/tmp/markdown # Export Markdown to custom directory"
         ]
 
@@ -169,6 +169,75 @@ module TaoPress
         end
       end
 
+      class ExportEvents < Base
+        SECTION_SEP = "=" * 80
+
+        desc "Export events from Contao to CSV and Markdown formats"
+
+        option :limit, type: :integer, desc: "Limit number of events to export"
+        option :csv_dir, type: :string, desc: "Override CSV output path", aliases: ["-c"]
+        option :markdown_dir, type: :string, desc: "Override Markdown output directory", aliases: ["-m"]
+
+        example [
+          "              # Export all events",
+          "--limit=10    # Export only first 10 events",
+          "--csv-dir=/tmp/ # Export CSV to custom directory",
+          "--markdown-dir=/tmp/markdown # Export Markdown to custom directory"
+        ]
+
+        def call(**options)
+          limit = options[:limit]
+
+          files = app["files"]
+
+          csv_path = File.join(options[:csv_dir] || settings.csv_dir, "events.csv")
+          files.mkdir_p(csv_path)
+
+          markdown_path = File.join(options[:markdown_dir] || settings.markdown_dir, "events")
+          files.mkdir_p(files.join(markdown_path, "fnord.md")) # TODO: remove fnord hack
+
+          logger.info "Starting events export..."
+          logger.info ""
+
+          command = app["commands.export_events"]
+
+          res = command.(csv_path:, markdown_path:, limit:)
+
+          case res
+          in Success(result)
+            logger.info "Overall result"
+            logger.info SECTION_SEP
+            logger.info TablePrinter.print_row(
+              result,
+              [:processed_count, :failures, :csv_file, :markdown_dir]
+            )
+          in Failure[:invalid_data, error]
+            logger.info "Invalid data found ..."
+            logger.info error.message
+            logger.info error.backtrace.join("\n")
+            logger.info ""
+            $stdout.print "Show invalid data? (y/N) "
+            dec = $stdin.gets.chomp
+            unless dec == "" || dec.downcase == "n"
+              logger.ap data.slice(:headline), :info
+            end
+          in Failure[code, *payload]
+            logger.info("something expectable happend")
+            logger.info "code: #{code}"
+            logger.info "payload:"
+            logger.info payload.inspect
+          else
+            logger.info("Something unexpected happend.")
+            logger.info("Some guy called 'your system administrator' has been informed.")
+          end
+        rescue => e
+          puts "something went wrong"
+          puts e.class
+          puts e
+          raise e
+        end
+      end
+
       class Info < Base
         desc "Show application information and available components"
 
@@ -196,7 +265,8 @@ module TaoPress
       end
 
       # Register commands
-      register "export", ExportNews, aliases: ["e"]
+      register "export:news", ExportNews, aliases: ["n"]
+      register "export:events", ExportEvents, aliases: ["e"]
       register "info", Info
       register "version", Version, aliases: ["v", "-v", "--version"]
     end

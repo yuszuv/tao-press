@@ -8,6 +8,13 @@ module Repositories
         .all
     end
 
+    def for_event(event_id)
+      dataset
+        .where(ptable: "tl_calendar_events", pid: event_id)
+        .order(:sorting)
+        .all
+    end
+
     private
 
     def dataset

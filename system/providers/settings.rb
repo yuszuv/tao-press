@@ -35,11 +35,11 @@ Application.register_provider(:settings, from: :dry_system) do
 
     # ENV: CSV_OUTPUT_PATH (required)
     # Output path for the generated CSV (e.g., export.csv)
-    setting :csv_output_path, constructor: Types::String.constrained(filled: true)
+    setting :csv_dir, constructor: Types::String.constrained(filled: true)
     setting :wordpress_uploads_prefix, default: "", constructor: Types::String
     # ENV: MARKDOWN_OUTPUT_PATH (required)
     # Output directory for the generated Markdown files (e.g., ./markdown_output)
-    setting :markdown_output_path, constructor: Types::String.constrained(filled: true)
+    setting :markdown_dir, constructor: Types::String.constrained(filled: true)
 
     setting :signal_account, constructor: Types::String.optional
     setting :signal_recipients, default: "", constructor: ->(xs) { xs.split(",").then{ Types::Array.of(Types::String)[_1] } }
